@@ -25,26 +25,31 @@ namespace World
             var min = float.MaxValue;
 
             for (var x = 0; x < width; x++)
-            for (var y = 0; y < height; y++)
             {
-                var amplitude = 1f;
-                var frequency = 1f;
-                var noiseHeight = 0f;
-
-                for (var i = 0; i < octaves; i++)
+                for (var y = 0; y < height; y++)
                 {
-                    noiseHeight += (Mathf.PerlinNoise(x / scale * frequency + octavesOffset[i].x,
-                        y / scale * frequency + octavesOffset[i].y) * 2 - 1) * amplitude;
+                    var amplitude = 1f;
+                    var frequency = 1f;
+                    var noiseHeight = 0f;
 
-                    amplitude *= persistance;
-                    frequency *= lacunarity;
+                    for (var i = 0; i < octaves; i++)
+                    {
+                        noiseHeight += (
+                            Mathf.PerlinNoise(
+                                x / scale * frequency + octavesOffset[i].x,
+                                y / scale * frequency + octavesOffset[i].y) //* 2 - 1
+                            ) * amplitude;
+
+                        amplitude *= persistance;
+                        frequency *= lacunarity;
+                    }
+
+                    if (noiseHeight > max)
+                        max = noiseHeight;
+                    else if (noiseHeight < min) min = noiseHeight;
+
+                    map[x, y] = noiseHeight;
                 }
-
-                if (noiseHeight > max)
-                    max = noiseHeight;
-                else if (noiseHeight < min) min = noiseHeight;
-
-                map[x, y] = noiseHeight;
             }
 
 

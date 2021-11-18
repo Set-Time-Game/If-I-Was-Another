@@ -1,39 +1,28 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using World;
+using static Classes.Utils.Structs;
 using Random = UnityEngine.Random;
 
 namespace Classes.World
 {
     [Serializable]
-    public sealed class Deco : MonoBehaviour, IGenerable
+    public sealed class Deco : Prop
     {
-        [SerializeField] private Variable variety;
-        [SerializeField] private SpriteRenderer spriteRenderer;
-        public Variable Variety => variety;
-        
-        public void Generate(out Variable variable)
+        public override void Generate(out Variable variable)
         {
-            var biome = GetComponentInParent<BiomeGenerator>();
-            var variant = biome.decoVariablesList[Random.Range(0, biome.decoVariablesList.Length)];
-            var texture = variant.texturesArray[Random.Range(0, variant.texturesArray.Length)];
+            CreateVariable(biome.decoVariablesList, out variable);
+            var texture = variable.texturesArray[Random.Range(0, variable.texturesArray.Length)];
 
             spriteRenderer.sprite = texture;
 
-            variety = variant;
+            variety = variable;
             variety.texturesArray = new[] {texture};
-            
+
             variety.Instance = this;
 
             variable = variety;
+            base.Generate(out variable);
         }
-        
-        public void SetHighlight(bool enable)
-        {
-        }
-        
-        public Transform Transform => transform;
-        public GameObject GameObject => gameObject;
     }
 }

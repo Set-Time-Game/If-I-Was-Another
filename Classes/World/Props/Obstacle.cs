@@ -1,57 +1,39 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using World;
+using static Classes.Utils.Structs;
 using Random = UnityEngine.Random;
 
 namespace Classes.World
 {
     [Serializable]
-    public sealed class Obstacle : MonoBehaviour, IGenerable
+    public class Obstacle : BigProp
     {
-        [SerializeField] private Variable variety;
-        [SerializeField] private SpriteRenderer spriteRenderer;
-        public Variable Variety => variety;
         
-        private const float Distance = .25f;
-        
-        public void SetHighlight(bool enable)
+        public override void Generate(out Variable variable)
         {
-            if (variety.viewsArray.Length <= 0) return;
-            
-            var texture = variety.viewsArray[0];
-            if (texture.outlineTexture || texture.defaultTexture)
-                spriteRenderer.sprite = enable && texture.outlineTexture ? texture.outlineTexture : texture.defaultTexture;
-        }
-        
-        public void Generate(out Variable variable)
-        {
-            var biome = GetComponentInParent<BiomeGenerator>();
-            var variant = biome.obstacleVariablesList[Random.Range(0, biome.obstacleVariablesList.Length)];
-            var texture = variant.viewsArray[Random.Range(0, variant.viewsArray.Length)];
+            CreateVariable(biome.obstacleVariablesList, out variable);
+            var texture = variable.viewsArray[Random.Range(0, variable.viewsArray.Length)];
 
+            if (texture.resourcesArray.Length < 1)
+                Destroy(GetComponent<CircleCollider2D>());
+
+            _defaultTexture = texture.defaultTexture;
+            _outlineTexture = texture.outlineTexture;
+            _pickedTexture = texture.pickedTexture;
+            _resources = texture.resourcesArray;
+            
             spriteRenderer.sprite = texture.defaultTexture;
 
-            variety = variant;
+            variety = variable;
             variety.viewsArray = new[] {texture};
-            
-            variety.Instance = this;
-            
-            //TODO: add checking by variant.size
-            {
-                var ground = biome.MapGroundVariable[Transform.position]
-                    .Instance.GameObject
-                    .GetComponent<Ground>();
 
-                foreach (var generable in ground.GetComponentsInChildren<IGenerable>().Where(x => x != (IGenerable) this && x != (IGenerable) ground))
-                    Destroy(generable.GameObject);
-            }
+            variety.Instance = this;
 
             variable = variety;
+            
+            base.Generate(out variable);
         }
-        
-        public Transform Transform => transform;
-        public GameObject GameObject => gameObject;
     }
 }

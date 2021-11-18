@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Classes.Entities;
 using Classes.Player;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
+using static Classes.Utils.Flags;
+using Button = Classes.Utils.Structs.Button;
 
 namespace UI
 {
@@ -15,10 +15,10 @@ namespace UI
 
         [SerializeField] private Character player;
         [SerializeField] private FixedJoystick attackJoystick;
-        [SerializeField] private Classes.UI.Button defaultButton;
-        [SerializeField] private Classes.UI.Button meleeButton;
+        [SerializeField] private Button defaultButton;
+        [SerializeField] private Button meleeButton;
 
-        private void Start() => player.OnWeaponSwap += AttackSwapped;
+        private void Start() => player.onWeaponSwapEvent += AttackSwapped;
 
         private void AttackSwapped(AttackType type)
         {

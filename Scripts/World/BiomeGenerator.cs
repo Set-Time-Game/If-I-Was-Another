@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Classes.Entities;
+using System.Runtime.InteropServices;
 using Classes.World;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Debug = UnityEngine.Debug;
+using UnityEngine.UI;
+using static Classes.Utils.Flags;
+using static Classes.Utils.Structs;
+using Random = UnityEngine.Random;
 
 namespace World
 {
@@ -16,8 +18,8 @@ namespace World
 
         public TexturesLayers[] objectsLayers;
 
-        [Space] 
-        public Variable[] resourceVariablesList;
+        [Space]
+        public Resource[] resourcesVariables;
         public Variable[] groundVariablesList;
         public Variable[] resourceSourceVariablesList;
         public Variable[] obstacleVariablesList;
@@ -32,30 +34,32 @@ namespace World
 
         public readonly Dictionary<Vector2, Variable> MapObstacleVariable =
             new Dictionary<Vector2, Variable>();
-        
-        public readonly Dictionary<Vector2, Variable> MapSpawnerVariable =
-            new Dictionary<Vector2, Variable>();
 
         public readonly Dictionary<Vector2, Variable> MapResourceSourceVariable =
             new Dictionary<Vector2, Variable>();
 
+        public readonly Dictionary<Vector2, Variable> MapSpawnerVariable =
+            new Dictionary<Vector2, Variable>();
+        
         private void Start()
         {
             var world = Classes.World.World.Singleton;
-            var map        = world.Map;
-            var mapDeco    = world.MapDeco;
+            var map = world.Map;
+            var mapDeco = world.MapDeco;
             var zeroPoint = world.zeroPoint;
 
-            var objects = GetComponentsInChildren<IGenerable>();
-            var ground    = objects.Where(x => x.Variety.type == ObjectType.Ground);
-            var obstacles = objects.Where(x => x.Variety.type == ObjectType.Spawner || x.Variety.type == ObjectType.Obstacle);
-            var resources = objects.Where(x => x.Variety.type == ObjectType.ResourceSource);
-            var deco      = objects.Where(x => x.Variety.type == ObjectType.Deco);
+            var ground = GetComponentsInChildren<IGenerable>(true)
+                .Where(x => x.Variety.type == ObjectType.Ground);
+            SetTo(ground, map, zeroPoint, false);
 
-            SetTo(ground,         map,     zeroPoint, false);
-            SetTo(obstacles,      mapDeco, zeroPoint);
-            SetTo(resources,      mapDeco, zeroPoint);
-            SetTo(deco,           mapDeco, zeroPoint);
+            //yield break;
+            
+            var objects = GetComponentsInChildren<IGenerable>().Where(x => x.Variety.type != ObjectType.Ground).ToArray();
+            foreach (var obj in objectsLayers.Where(x => x.type != ObjectType.Ground))
+            {
+                SetTo(objects.Where(x => x.Variety.type == obj.type), mapDeco, zeroPoint);
+            }
+            
 
             isGenerated = true;
         }
@@ -66,22 +70,50 @@ namespace World
             var generables = targets as IGenerable[] ?? targets.ToArray();
             var type = generables.First().Variety.type;
             var layer = objectsLayers.First(l => l.type == type);
-            
+
             foreach (var target in generables)
             {
+                if (!target.GameObject) continue;
+
                 if (layer.type != target.Variety.type)
                     layer = objectsLayers.First(l => l.type == type);
-                
+
                 var position = target.Transform.position;
                 var level = map[(int) -(zeroPoint.x - position.x), (int) (zeroPoint.y - position.y)];
 
-                if (layer.heightFrom <= level && layer.heightTo >= level &&
+                //if (layer.heightFrom <= level && layer.heightTo >= level &&
+                if (layer.height >= level &&
                     !MapObstacleVariable.ContainsKey(position) &&
                     !MapResourceSourceVariable.ContainsKey(position))
                 {
                     target.Generate(out var variable);
                     SaveVariable(ref variable);
+
+                    if (variable.size != Vector2.zero)
+                    {
+                        for (var x = variable.size.x; x >= -variable.size.x; x--)
+                        {
+                            for (var y = variable.size.y; y >= -variable.size.y; y--)
+                            {
+                                var volume = new Vector2(x, y);
+                                var intVolume = new Vector2Int((int) x, (int) y);
+                                var pos = (Vector2) position + intVolume;
+
+                                if ((pos) == (Vector2) position) continue;
+
+                                if (!MapGroundVariable.TryGetValue(pos, out var ground) || !ground.canPlacing)
+                                    continue;
+
+                                intVolume = new Vector2Int(Mathf.Abs(intVolume.x), Mathf.Abs(intVolume.x));
+                                ground.Instance.GameObject.GetComponent<Ground>()
+                                    .DisablePlacing(volume, variable.size, intVolume);
+
+                            }
+                        }
+                    }
+
                     continue;
+
                 }
 
                 if (!destroyIfLess || !target.GameObject) continue;
@@ -91,9 +123,8 @@ namespace World
         }
 
         private void SaveVariable(ref Variable variable)
-        {
-            var position = variable.Instance.Transform.position;
-            
+        { var position = variable.Instance.Transform.position;
+
             switch (variable.type)
             {
                 case ObjectType.Ground:
@@ -135,15 +166,6 @@ namespace World
                 new Vector2(x + 1, y - 1),
                 new Vector2(x - 1, y + 1)
             };
-        }
-
-        [Serializable]
-        public struct TexturesLayers
-        {
-            public string name;
-            public float heightFrom;
-            public float heightTo;
-            public ObjectType type;
         }
     }
 }

@@ -1,57 +1,56 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Classes.Entities;
 using Classes.World;
+using Interfaces;
 using UnityEngine;
 
 public class Collector : MonoBehaviour
 {
     [SerializeField] private List<string> tagsWhiteList;
     
-    protected readonly LinkedList<IGenerable> Resources = new LinkedList<IGenerable>(); 
-    protected readonly LinkedList<IDamageable> Enemies = new LinkedList<IDamageable>();
+    public readonly LinkedList<ICollectable> Resources = new LinkedList<ICollectable>(); 
+    public readonly LinkedList<IDamageable> Enemies = new LinkedList<IDamageable>();
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
         if (!tagsWhiteList.Contains(collision.tag)) return;
         
-        if (!collision.TryGetComponent<IGenerable>(out var generable))
+        if (!collision.TryGetComponent<ICollectable>(out var collectable))
         {
-            /*
+            
             if (!collision.TryGetComponent<IDamageable>(out var enemy))
             {
             }
-            else if (!_enemies.Contains(enemy))
+            else if (!Enemies.Contains(enemy))
             {
-                
-            }*/
+                Enemies.AddLast(enemy);
+            }
         }
-        else if (!Resources.Contains(generable) && HasHighlight(generable))
+        else if (!Resources.Contains(collectable) && collectable.PickedTexture && collectable.OutlineTexture && collectable.DefaultTexture)
         {
-            Resources.AddLast(generable);
+            Resources.AddLast(collectable);
         }
     }
 
     protected virtual void OnTriggerExit2D(Collider2D collision)
     {
-        if (!collision.TryGetComponent<IGenerable>(out var generable))
+        if (!collision.TryGetComponent<ICollectable>(out var collectable))
         {
-            /*
+            
             if (!collision.TryGetComponent<IDamageable>(out var enemy))
             {
             }
-            else if (!_enemies.Contains(enemy))
+            else if (!Enemies.Contains(enemy))
             {
-                
-            }*/
+                Enemies.Remove(enemy);
+            }
         }
-        else if (Resources.Contains(generable) && HasHighlight(generable))
+        else if (Resources.Contains(collectable))
         {
-            Resources.Remove(generable);
+            Resources.Remove(collectable);
         }
     }
     
+    /*
     protected virtual bool HasHighlight(IEntity target)
     {
         if (target.GameObject.TryGetComponent<ResourceSource>(out _)) return true;
@@ -60,4 +59,5 @@ public class Collector : MonoBehaviour
 
         return false;
     }
+    */
 }

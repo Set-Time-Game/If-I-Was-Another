@@ -1,8 +1,7 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using Classes.Entities;
 using Classes.Player;
 using UnityEngine;
+using static Classes.Utils.Flags;
 
 namespace UI
 {
@@ -12,9 +11,11 @@ namespace UI
         [SerializeField] private Character player;
         [SerializeField] private GameObject buttons;
         [SerializeField] private FixedJoystick attackJoystick;
-        
+
         private readonly WaitForSeconds _wipeTimeout = new WaitForSeconds(30);
         private Coroutine _wiperCoroutine;
+
+        public static SkillCombiner Singleton { get; set; }
 
         private void Awake()
         {
@@ -23,7 +24,7 @@ namespace UI
 
         private void Start()
         {
-            player.OnWeaponSwap += MagePanelSwitch;
+            player.onWeaponSwapEvent += MagePanelSwitch;
 
             if (player.AttackType == AttackType.Mage)
             {
@@ -49,7 +50,6 @@ namespace UI
 
             if (!buttons.activeSelf)
                 buttons.SetActive(true);
-
         }
 
         public void OnButton(string buttonName)
@@ -69,7 +69,5 @@ namespace UI
                 combo = "";
             }
         }
-
-        public static SkillCombiner Singleton { get; set; }
     }
 }

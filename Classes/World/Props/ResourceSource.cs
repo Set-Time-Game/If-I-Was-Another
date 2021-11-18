@@ -1,48 +1,49 @@
 ﻿using System;
 using System.Linq;
+using Interfaces;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using World;
+using static Classes.Utils.Structs;
 using Random = UnityEngine.Random;
 
 namespace Classes.World
 {
     [Serializable]
-    public sealed class ResourceSource : MonoBehaviour, IGenerable
+    public sealed class ResourceSource : CollectableProp
     {
-        [SerializeField] private Variable variety;
-        [SerializeField] private SpriteRenderer spriteRenderer;
-        public Variable Variety => variety;
-        
-        public void SetHighlight(bool enable)
+        public override Resource[] Collect()
         {
-            if (variety.viewsArray.Length <= 0) return;
-            
-            var texture = variety.viewsArray[0];
-            if (texture.outlineTexture || texture.defaultTexture)
-                spriteRenderer.sprite = enable && texture.outlineTexture ? texture.outlineTexture : texture.defaultTexture;
+            collectCollider.enabled = false;
+            spriteRenderer.sprite = PickedTexture;
+
+            return Resources;
         }
         
-        public void Generate(out Variable variable)
+        public override void Generate(out Variable variable)
         {
-            foreach (var i in GetComponentsInParent<Deco>().Select(x => x.gameObject).Where(x => x.transform.localPosition == transform.localPosition))
-                Destroy(i);
+            CreateVariable(biome.resourceSourceVariablesList, out variable);
             
-            var biome = GetComponentInParent<BiomeGenerator>();
-            var variant = biome.resourceSourceVariablesList[Random.Range(0, biome.resourceSourceVariablesList.Length)];
-            var texture = variant.viewsArray[Random.Range(0, variant.viewsArray.Length)];
+            foreach (var i in
+                GetComponentsInParent<Deco>()
+                    .Select(x => x.gameObject)
+                    .Where(x => x.transform.localPosition == transform.localPosition))
+                Destroy(i);
+            var texture = variable.viewsArray[Random.Range(0, variable.viewsArray.Length)];
+
+            _defaultTexture = texture.defaultTexture;
+            _outlineTexture = texture.outlineTexture;
+            _pickedTexture = texture.pickedTexture;
+            _resources = texture.resourcesArray;
 
             spriteRenderer.sprite = texture.defaultTexture;
 
-            variety = variant;
+            variety = variable;
             variety.viewsArray = new[] {texture};
-            
             variety.Instance = this;
 
             variable = variety;
+            
+            base.Generate(out variable);
         }
-
-        public Transform Transform => transform;
-        public GameObject GameObject => gameObject;
     }
 }
