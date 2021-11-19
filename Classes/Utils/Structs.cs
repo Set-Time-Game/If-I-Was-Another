@@ -16,6 +16,7 @@ namespace Classes.Utils
             //public float heightFrom;
             //public float heightTo;
             public float height;
+            public float chanceOfSpawn;
             public ObjectType type;
         }
         

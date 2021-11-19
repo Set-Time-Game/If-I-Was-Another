@@ -86,34 +86,35 @@ namespace World
                     !MapObstacleVariable.ContainsKey(position) &&
                     !MapResourceSourceVariable.ContainsKey(position))
                 {
-                    target.Generate(out var variable);
-                    SaveVariable(ref variable);
-
-                    if (variable.size != Vector2.zero)
+                    if (layer.chanceOfSpawn == 0 || layer.chanceOfSpawn >= Random.value)
                     {
-                        for (var x = variable.size.x; x >= -variable.size.x; x--)
+                        target.Generate(out var variable);
+                        SaveVariable(ref variable);
+
+                        if (variable.size != Vector2.zero)
                         {
-                            for (var y = variable.size.y; y >= -variable.size.y; y--)
+                            for (var x = variable.size.x; x >= -variable.size.x; x--)
                             {
-                                var volume = new Vector2(x, y);
-                                var intVolume = new Vector2Int((int) x, (int) y);
-                                var pos = (Vector2) position + intVolume;
+                                for (var y = variable.size.y; y >= -variable.size.y; y--)
+                                {
+                                    var volume = new Vector2(x, y);
+                                    var intVolume = new Vector2Int((int) x, (int) y);
+                                    var pos = (Vector2) position + intVolume;
 
-                                if ((pos) == (Vector2) position) continue;
+                                    if ((pos) == (Vector2) position) continue;
 
-                                if (!MapGroundVariable.TryGetValue(pos, out var ground) || !ground.canPlacing)
-                                    continue;
+                                    if (!MapGroundVariable.TryGetValue(pos, out var ground) || !ground.canPlacing)
+                                        continue;
 
-                                intVolume = new Vector2Int(Mathf.Abs(intVolume.x), Mathf.Abs(intVolume.x));
-                                ground.Instance.GameObject.GetComponent<Ground>()
-                                    .DisablePlacing(volume, variable.size, intVolume);
+                                    intVolume = new Vector2Int(Mathf.Abs(intVolume.x), Mathf.Abs(intVolume.x));
+                                    ground.Instance.GameObject.GetComponent<Ground>()
+                                        .DisablePlacing(volume, variable.size, intVolume);
 
+                                }
                             }
                         }
+                        continue;
                     }
-
-                    continue;
-
                 }
 
                 if (!destroyIfLess || !target.GameObject) continue;

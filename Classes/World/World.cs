@@ -42,9 +42,9 @@ namespace Classes.World
 
         private void Awake()
         {
-            if (seed != 0)
-                Random.InitState(seed);
+            var defaultSeed = (int) DateTime.Now.Ticks;
 
+            Random.InitState(seed != 0 ? seed : defaultSeed);
             NoiseMapGenerator.GenerateNoiseMap(
                 size,
                 offsets,
@@ -54,6 +54,7 @@ namespace Classes.World
                 lacunarity,
                 out Map);
 
+            Random.InitState(seedDeco != 0 ? seedDeco : defaultSeed);
             NoiseMapGenerator.GenerateNoiseMap(
                 sizeDeco,
                 offsetsDeco,
@@ -64,6 +65,8 @@ namespace Classes.World
                 out MapDeco);
 
             Singleton = this;
+
+            Random.InitState(defaultSeed);
         }
 
         private IEnumerator Start()

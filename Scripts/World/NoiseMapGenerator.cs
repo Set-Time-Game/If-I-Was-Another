@@ -34,12 +34,18 @@ namespace World
 
                     for (var i = 0; i < octaves; i++)
                     {
-                        noiseHeight += (
+                        /*noiseHeight += (
                             Mathf.PerlinNoise(
                                 x / scale * frequency + octavesOffset[i].x,
                                 y / scale * frequency + octavesOffset[i].y) //* 2 - 1
                             ) * amplitude;
 
+                        amplitude *= persistance;
+                        frequency *= lacunarity;*/
+                        var address = (new Vector2(x, y) / scale) + octavesOffset[i];
+                        address *= frequency;
+                        noiseHeight += Mathf.PerlinNoise(address.x, address.y) * amplitude;
+                        
                         amplitude *= persistance;
                         frequency *= lacunarity;
                     }
