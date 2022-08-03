@@ -7,7 +7,7 @@ namespace Systems.General.Control
 {
     public class AttackPoint : MonoBehaviour
     {
-        [SerializeField] private GameObject bulletPrefab;
+        [SerializeField] private GameObject m_bulletPrefab;
         [SerializeField] private Player m_Player;
         [SerializeField] private ControlStick m_AttackStick;
         [SerializeField] private Transform m_Transform;
@@ -21,11 +21,11 @@ namespace Systems.General.Control
 
         private void AttackMelee()
         {
-            
+            //TODO: take enemies by map
         }
         
         public void AttackRange() 
-            => Instantiate(bulletPrefab, m_Transform.position, m_Transform.rotation);
+            => Instantiate(m_bulletPrefab, m_Transform.position, m_Transform.rotation);
 
         public void SetAttack(AttackMode _, AttackMode mode)
         {
