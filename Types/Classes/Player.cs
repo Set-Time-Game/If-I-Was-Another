@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Threading;
 using Systems.General.Control;
 using UnityEngine;
 using UnityEngine.Events;
@@ -43,7 +41,8 @@ namespace Types.Classes
             SetAnimatorPosition(ControlStick.SnapInput(attackInput, AxisOptions.Fixed));
         }
         
-        public void SetRoll() => SetTrigger(PlayerStates.Roll);
+        public void SetRoll() 
+            => SetTrigger(PlayerStates.Roll);
 
         public void SetMove(Vector2 moveInput)
         {
@@ -53,7 +52,8 @@ namespace Types.Classes
 
         public void StopMove() => SetSpeed(SpeedMode.Idle);
 
-        public void SetAttack(AttackMode _, AttackMode mode) => animator.SetFloat(AttackModeHash, (byte) mode);
+        public void SetAttack(AttackMode _, AttackMode mode) 
+            => animator.SetFloat(AttackModeHash, (byte) mode);
 
 
         private void SetAnimatorPosition(Vector2 position)
@@ -63,7 +63,8 @@ namespace Types.Classes
             FlipSprite(position);
         }
 
-        private void SetSpeed(SpeedMode amount) => animator.SetFloat(Speed, (byte) amount);
+        private void SetSpeed(SpeedMode amount) 
+            => animator.SetFloat(Speed, (byte) amount);
 
         public void SetTrigger(PlayerStates state)
         {
@@ -94,11 +95,14 @@ namespace Types.Classes
         }
 
         
-        private void FlipSprite(Vector2 position) => FlipSprite(position.x < -0.7f);
+        private void FlipSprite(Vector2 position) 
+            => FlipSprite(position.x < -0.7f);
 
-        private void FlipSprite(bool state) => spriteRenderer.flipX = state;
+        private void FlipSprite(bool state) 
+            => spriteRenderer.flipX = state;
 
-        private Vector2 GetAnimatorPosition() => new Vector2(animator.GetFloat(PositionX), animator.GetFloat(PositionY));
+        private Vector2 GetAnimatorPosition() 
+            => new Vector2(animator.GetFloat(PositionX), animator.GetFloat(PositionY));
     }
 
     [Serializable]
