@@ -73,6 +73,15 @@ namespace Systems.General.Controls
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Collect"",
+                    ""type"": ""Button"",
+                    ""id"": ""924aa5e9-eb03-43f3-bb44-d29fe43e6c17"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -218,6 +227,28 @@ namespace Systems.General.Controls
                     ""action"": ""AttackSwitch"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b794bd65-9faf-409b-a097-29d389986291"",
+                    ""path"": ""<Gamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Collect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4312db13-647c-4a06-bcd6-ff9eff0e71f1"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Collect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -231,6 +262,7 @@ namespace Systems.General.Controls
             m_Main_AttackMove = m_Main.FindAction("Attack Move", throwIfNotFound: true);
             m_Main_AttackAction = m_Main.FindAction("Attack Action", throwIfNotFound: true);
             m_Main_AttackSwitch = m_Main.FindAction("AttackSwitch", throwIfNotFound: true);
+            m_Main_Collect = m_Main.FindAction("Collect", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -295,6 +327,7 @@ namespace Systems.General.Controls
         private readonly InputAction m_Main_AttackMove;
         private readonly InputAction m_Main_AttackAction;
         private readonly InputAction m_Main_AttackSwitch;
+        private readonly InputAction m_Main_Collect;
         public struct MainActions
         {
             private @PlayerControls m_Wrapper;
@@ -304,6 +337,7 @@ namespace Systems.General.Controls
             public InputAction @AttackMove => m_Wrapper.m_Main_AttackMove;
             public InputAction @AttackAction => m_Wrapper.m_Main_AttackAction;
             public InputAction @AttackSwitch => m_Wrapper.m_Main_AttackSwitch;
+            public InputAction @Collect => m_Wrapper.m_Main_Collect;
             public InputActionMap Get() { return m_Wrapper.m_Main; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -328,6 +362,9 @@ namespace Systems.General.Controls
                     @AttackSwitch.started -= m_Wrapper.m_MainActionsCallbackInterface.OnAttackSwitch;
                     @AttackSwitch.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnAttackSwitch;
                     @AttackSwitch.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnAttackSwitch;
+                    @Collect.started -= m_Wrapper.m_MainActionsCallbackInterface.OnCollect;
+                    @Collect.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnCollect;
+                    @Collect.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnCollect;
                 }
                 m_Wrapper.m_MainActionsCallbackInterface = instance;
                 if (instance != null)
@@ -347,6 +384,9 @@ namespace Systems.General.Controls
                     @AttackSwitch.started += instance.OnAttackSwitch;
                     @AttackSwitch.performed += instance.OnAttackSwitch;
                     @AttackSwitch.canceled += instance.OnAttackSwitch;
+                    @Collect.started += instance.OnCollect;
+                    @Collect.performed += instance.OnCollect;
+                    @Collect.canceled += instance.OnCollect;
                 }
             }
         }
@@ -358,6 +398,7 @@ namespace Systems.General.Controls
             void OnAttackMove(InputAction.CallbackContext context);
             void OnAttackAction(InputAction.CallbackContext context);
             void OnAttackSwitch(InputAction.CallbackContext context);
+            void OnCollect(InputAction.CallbackContext context);
         }
     }
 }

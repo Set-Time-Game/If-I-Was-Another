@@ -24,6 +24,7 @@ namespace Systems.General.Control
         public Guid attackSwitchId;
 
         public UnityEvent OnRoll;
+        public UnityEvent OnCollect;
         public UnityEvent OnAttackSwitch;
         public UnityEvent<Vector2> OnAttackMoveBegin;
         public UnityEvent OnAttackMoveEnd;

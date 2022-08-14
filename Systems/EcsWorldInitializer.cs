@@ -16,6 +16,8 @@ namespace Systems
         [SerializeField]
         private MapData mapData;
         [SerializeField]
+        private InventorySystem inventorySystem;
+        [SerializeField]
         private ControlsData controlsData;
         [SerializeField]
         private PlayerController playerController;
@@ -26,19 +28,27 @@ namespace Systems
         {
             Application.targetFrameRate = 60;
 
-            Random.InitState((int) DateTime.UtcNow.Ticks);
+            //Random.InitState((int) DateTime.UtcNow.Ticks);
+            Random.InitState(1);
+            var worldState = new WorldStateSystem();
+            inventorySystem.WorldState = worldState;
             _world = new EcsWorld();
             _systems = new EcsSystems(_world)
                 .Inject(mapData)
                 .Inject(player)
-                .Inject(controlsData);
+                .Inject(controlsData)
+                .Add(new GeneratorSystem())
+                .Add(worldState)
+                .Add(inventorySystem);
+            
+            _systems.Inject(_systems);
         }
 
         private void Start()
         {
-            _systems.Add(new GeneratorSystem())
-                .Add(new WorldStateSystem());
             _systems.Init();
+            
+            GC.Collect();
         }
 
         private void Update() => _systems.Run();
@@ -49,6 +59,8 @@ namespace Systems
             _systems = null;
             _world.Destroy();
             _world = null;
+            
+            GC.Collect();
         }
     }
 }

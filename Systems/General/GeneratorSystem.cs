@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Leopotam.Ecs;
 using Types.Interfaces;
 using Types.Structs;
-using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Systems.General
 {
@@ -60,10 +61,10 @@ namespace Systems.General
                 ground.Id = groundIndex;
                 ground.ChunkId = chunk.Id;
                 ground.BiomeId = chunk.BiomeId;
-                ground.Parts = new GroundPart[groundConfig.isPlaceable ? MapData.GroundSize : 0];
-                ground.MainTexture = groundConfig.textureVariants[Random.Range(0, groundConfig.textureVariants.Length)];
+                ground.Parts = new GroundPart?[groundConfig.config.isPlaceable ? MapData.GroundSize : 0];
+                ground.MainTexture = groundConfig.config.textureVariants[Random.Range(0, groundConfig.config.textureVariants.Length)];
 
-                if (groundConfig.isPlaceable)
+                if (groundConfig.config.isPlaceable)
                     GenerateParts(ref biomeConfig, ref ground);
 
                 chunk.Grounds[groundIndex] = groundEntity.Ref<Ground>();
@@ -75,19 +76,22 @@ namespace Systems.General
             var parts = new GroundPartConfig[MapData.GroundSize];
             for (byte partIndex = 0; partIndex < MapData.GroundSize; partIndex++)
             {
-                var variant = GetBest(ref biomeConfig.groundPartConfigs);
-                parts[partIndex] = variant.Chance < Random.value
-                    ? new GroundPartConfig {type = PartType.None, state = PartState.None}
-                    : variant;
+                var cfg = GetBest(ref biomeConfig.groundPartConfigs);
+                parts[partIndex] = cfg.Chance < Random.value
+                    ? new GroundPartConfig { chance = -1}
+                    : cfg;
             }
 
-            if (parts.Any(x => x.type == PartType.Big || x.type == PartType.Struct))
-                parts = new[] {parts.First(x => x.type == PartType.Big || x.type == PartType.Struct)};
+            if (parts.Any(x => x.chance != -1f && x.configAsset.Any(y => y.type is PartType.Big or PartType.Struct)))
+                parts = new[] {parts.First(x => x.chance != -1f && x.configAsset.Any(y => y.type is PartType.Big or PartType.Struct))};
             else
-                parts[0] = new GroundPartConfig {type = PartType.None, state = PartState.None};
+                parts[0] = new GroundPartConfig {chance = -1};
 
             for (byte partIndex = 0; partIndex < parts.Length; partIndex++)
-                ground.Parts[partIndex] = new GroundPart(parts[partIndex]);
+            {
+                var part = parts[partIndex];
+                ground.Parts[partIndex] = part.chance == -1 ? null : new GroundPart(parts[partIndex]);
+            }
         }
 
         public static T GetBest<T>(ref T[] variants) where T: IVariant

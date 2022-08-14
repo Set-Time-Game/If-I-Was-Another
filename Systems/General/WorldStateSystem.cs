@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Leopotam.Ecs;
 using Pathfinding;
 using Types.Classes;
@@ -7,17 +8,18 @@ using Types.Structs;
 using UnityEngine;
 using Chunk = Types.Structs.Chunk;
 using Ground = Types.Structs.Ground;
+using GroundPart = Types.Structs.GroundPart;
 
 namespace Systems.General
 {
-    public class WorldStateSystem : IEcsInitSystem
+    public class WorldStateSystem : IEcsPreInitSystem
     {
         //public EcsWorld World = null;
         public Player PlayerInstance;
         public MapData MapData;
 
-        private byte m_currentBiomeId;
-        private uint m_currentChunkId;
+        public byte m_currentBiomeId;
+        public uint m_currentChunkId;
         //private byte CurrentGroundId = 0;
 
         private uint m_pivot;
@@ -30,7 +32,7 @@ namespace Systems.General
         private readonly WaitForFixedUpdate m_fixedUpdateTimer = new();
         private readonly WaitForSecondsRealtime m_waitTwoSeconds = new(2);
 
-        public void Init()
+        public void PreInit()
         {
             m_vectors = new Vector2(10, 6);
             m_pivot = MapData.BiomeSize / 2;
@@ -55,12 +57,7 @@ namespace Systems.General
         {
             while (true)
             {
-                /*yield return _fixedUpdateTimer;
-                
-                if (GetClosestChunk(out var closestChunk).Id == _currentChunkId &&
-                    closestChunk.BiomeId == _currentBiomeId) continue;*/
-
-                yield return m_waitTwoSeconds;
+                yield return m_fixedUpdateTimer;
                 
                 if (GetClosestChunk(out var closestChunk).Id == m_currentChunkId &&
                     closestChunk.BiomeId == m_currentBiomeId) continue;
@@ -164,14 +161,14 @@ namespace Systems.General
             }
         }
 
-        private void SetChunk(ref Biome biomeData, ref byte instanceIndex, ref uint chunkIndex)
+        /*private void SetChunk(ref Biome biomeData, ref byte instanceIndex, ref uint chunkIndex)
         {
             ref var chunkData = ref biomeData.Chunks[chunkIndex].Unref();
             var chunkInstance = MapData.cluster.chunks[instanceIndex];
 
             for (byte j = 0; j < chunkInstance.grounds.Length; j++)
                 SetGround(ref chunkData, ref j, ref chunkInstance);
-        }
+        }*/
 
         private void SetGround(ref Chunk chunkData, ref byte index, ref Types.Classes.Chunk chunkInstance)
         {
@@ -200,14 +197,33 @@ namespace Systems.General
             for (byte partIndex = 0; partIndex < groundData.Parts.Length; partIndex++)
             {
                 var partInstance = groundInstance.parts[partIndex];
-                var partData = groundData.Parts[partIndex];
+                var raw = groundData.Parts[partIndex];
+                if (raw is null)
+                {
+                    partInstance.gameObject.SetActive(false);
+                    continue;
+                }
+                
+                
+                var partData = raw.Value;
 
-                partInstance.spriteRenderer.sprite = partData.MainTexture;
+                partData.Instance = partInstance;
+                groundData.Parts[partIndex] = partData;
+
+                partData.Instance.Id = partIndex;
+                partData.Instance.GroundId = groundData.Id;
+                
+                partInstance.gameObject.SetActive(true);
+                partInstance.gameObject.name = partData.Name;
+                partInstance.spriteRenderer.sprite = partData.GetSprite();
                 partInstance.collectCollider.enabled = partData.HasCollector;
                 partInstance.collisionCollider.enabled = partData.HasCollision;
 
                 if (partData.HasCollision)
                     partInstance.gameObject.layer = 8;
+                
+                if (partData.HasCollector)
+                    partInstance.gameObject.layer = 9;
             }
         }
     }

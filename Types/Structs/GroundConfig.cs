@@ -1,6 +1,7 @@
 ﻿using System;
 using Types.Interfaces;
 using UnityEngine;
+using Variants.Ground;
 
 namespace Types.Structs
 {
@@ -9,9 +10,7 @@ namespace Types.Structs
     {
         public string name;
         public float chance;
-
-        public bool isPlaceable;
-        public Sprite[] textureVariants;
+        public GroundBase config;
         public float Chance => chance;
     }
 }

@@ -9,6 +9,6 @@ namespace Types.Structs
         public byte BiomeId;
 
         public Sprite MainTexture;
-        public GroundPart[] Parts;
+        public GroundPart?[] Parts;
     }
 }
